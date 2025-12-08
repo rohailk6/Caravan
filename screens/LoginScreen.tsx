@@ -86,8 +86,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     zIndex: 10,
   },
-
-
   /* -------- Content (Image + Text) -------- */
   contentContainer: {
     flex: 1,

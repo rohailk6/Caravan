@@ -2,62 +2,77 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const SignupDetails = () => {
   const router = useRouter();
 
+  // ---------------- STATE ----------------
+  const [name, setName] = useState("");
+  const [emergency, setEmergency] = useState("");
+  const [phone, setPhone] = useState("");
   const [genderOpen, setGenderOpen] = useState(false);
-  const [selectedGender, setSelectedGender] = useState('');
+  const [selectedGender, setSelectedGender] = useState("");
+
+  // ---------------- VALIDATION ----------------
+  const allFieldsFilled = () => {
+    return (
+      name.trim() !== "" &&
+      emergency.trim() !== "" &&
+      phone.trim() !== "" &&
+      selectedGender.trim() !== ""
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
 
-      <Stack.Screen options={{headerShown: false}}/>
+        <Stack.Screen options={{ headerShown: false }} />
 
         {/* Back Button */}
         <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={26} color="#333" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
-        
 
         {/* Title */}
         <Text style={styles.title}>Sign up with your email or phone number</Text>
 
         {/* Name Input */}
         <View style={styles.inputWrapper}>
-          <TextInput 
+          <TextInput
             placeholder="Name"
             placeholderTextColor="#8BB5FF"
             style={styles.input}
+            value={name}
+            onChangeText={setName}
           />
         </View>
 
         {/* Emergency Contact */}
         <View style={styles.inputWrapper}>
-          <TextInput 
+          <TextInput
             placeholder="Emergency Contact"
             placeholderTextColor="#8BB5FF"
             style={styles.input}
+            keyboardType="phone-pad"
+            value={emergency}
+            onChangeText={setEmergency}
           />
         </View>
 
         {/* Phone Number Row */}
         <View style={styles.phoneRow}>
-
-          {/* Flag Placeholder Box */}
-          <TouchableOpacity style={styles.flagBox}>
-            {/* Leave empty — you will add flag image later */}
-          </TouchableOpacity>
+          {/* Flag Placeholder */}
+          <TouchableOpacity style={styles.flagBox}></TouchableOpacity>
 
           {/* Country Code */}
           <View style={styles.codeBox}>
@@ -65,13 +80,14 @@ const SignupDetails = () => {
           </View>
 
           {/* Phone Input */}
-          <TextInput 
+          <TextInput
             placeholder="Your mobile number"
             placeholderTextColor="#8BB5FF"
             style={styles.phoneInput}
             keyboardType="phone-pad"
+            value={phone}
+            onChangeText={setPhone}
           />
-
         </View>
 
         {/* Gender Dropdown */}
@@ -110,12 +126,21 @@ const SignupDetails = () => {
         <View style={styles.termsRow}>
           <Ionicons name="checkmark-circle-outline" size={22} color="#4D9FFF" />
           <Text style={styles.termsText}>
-            By signing up, you agree to the <Text style={styles.bold}>Terms of service</Text> and <Text style={styles.bold}>Privacy policy.</Text>
+            By signing up, you agree to the{" "}
+            <Text style={styles.bold}>Terms of service</Text> and{" "}
+            <Text style={styles.bold}>Privacy policy.</Text>
           </Text>
         </View>
 
         {/* Sign Up Button */}
-        <TouchableOpacity style={styles.signupButton}>
+        <TouchableOpacity
+          style={[
+            styles.signupButton,
+            { opacity: allFieldsFilled() ? 1 : 0.5 }
+          ]}
+          disabled={!allFieldsFilled()}
+          onPress={() => router.push("/verify")}
+        >
           <Text style={styles.signupText}>Sign Up</Text>
         </TouchableOpacity>
 
@@ -165,21 +190,20 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   phoneRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  borderWidth: 1.5,
-  borderColor: "#8BB5FF",
-  borderRadius: 12,
-  paddingHorizontal: 14,   // UPDATED
-  paddingVertical: 14,     // UPDATED (same padding as inputWrapper)
-  marginBottom: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#8BB5FF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 20,
   },
-
   flagBox: {
     width: 38,
     height: 28,
     borderRadius: 6,
-    backgroundColor: "#E5EEFF", // placeholder background
+    backgroundColor: "#E5EEFF",
     marginRight: 8,
   },
   codeBox: {
