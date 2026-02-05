@@ -16,6 +16,7 @@ const SignupDetails = () => {
 
   // ---------------- STATE ----------------
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [emergency, setEmergency] = useState("");
   const [phone, setPhone] = useState("");
   const [genderOpen, setGenderOpen] = useState(false);
@@ -54,6 +55,16 @@ const SignupDetails = () => {
             style={styles.input}
             value={name}
             onChangeText={setName}
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <TextInput
+            placeholder="Email"
+            placeholderTextColor="#8BB5FF"
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
           />
         </View>
 

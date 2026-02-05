@@ -38,12 +38,6 @@ const DriverDashboardScreen = () => {
                 
                 {/* Car Image with Map Pin */}
                 <View style={styles.carContainer}>
-                    {/* *** IMPORTANT FIX: ***
-                       The manual Ionicons component is removed. This was causing the overlap/blur 
-                       because the image drivercar1.png already contains the map pin icon.
-                       
-                       <Ionicons name="location" size={50} color="#4D9EFF" style={styles.pinIcon} /> 
-                    */}
                     <Image
                         source={carImageSource} 
                         style={styles.carImage}
@@ -59,14 +53,14 @@ const DriverDashboardScreen = () => {
             <View style={styles.buttonContainer}>
                 <TouchableOpacity 
                     style={styles.postRideButton} 
-                    onPress={() => {/* Navigation or Logic for POST A RIDE */}}
+                    onPress={() => router.push('/postRideVehicle')}
                 >
                     <Text style={styles.buttonText}>POST A RIDE</Text>
                 </TouchableOpacity>
                 
                 <TouchableOpacity 
                     style={styles.checkUpdatesButton} 
-                    onPress={() => {/* Navigation or Logic for CHECK RIDE UPDATES */}}
+                    onPress={() => router.push('/postRideDetails')}
                 >
                     <Text style={styles.buttonText}>CHECK RIDE UPDATES</Text>
                 </TouchableOpacity>
@@ -123,18 +117,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     carContainer: {
-        // Ensures the image is centered
         alignItems: 'center', 
         justifyContent: 'center',
         marginBottom: 50,
         width: '100%', 
     },
-    // The pinIcon style is no longer needed since the <Ionicons> component was removed.
-    // pinIcon: {
-    //     position: 'absolute',
-    //     top: -30, 
-    //     zIndex: 1,
-    // },
     carImage: {
         width: '90%',
         height: 150,
