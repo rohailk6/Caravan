@@ -26,9 +26,7 @@ const PostRideDetailsScreen = () => {
 
   const seatOptions = ["1", "2", "3", "4", "5", "6", "7"];
 
-  // Update locations when returning from map picker
   useEffect(() => {
-    // Handle Start Location update
     if (params.startLocation && params.startLocation !== startLocation) {
       setStartLocation(params.startLocation as string);
       if (params.startLatitude && params.startLongitude) {
@@ -39,7 +37,6 @@ const PostRideDetailsScreen = () => {
       }
     }
 
-    // Handle Finish Location update
     if (params.finishLocation && params.finishLocation !== finishLocation) {
       setFinishLocation(params.finishLocation as string);
       if (params.finishLatitude && params.finishLongitude) {
@@ -60,9 +57,8 @@ const PostRideDetailsScreen = () => {
     router.push({
       pathname: "/locationPicker",
       params: {
-        ...params, // Spread existing car details
+        ...params,
         locationType,
-        // Send current state to picker to ensure nothing is lost during the round trip
         startLocation,
         finishLocation,
         startLatitude: startCoordinates?.latitude?.toString(),
@@ -75,24 +71,20 @@ const PostRideDetailsScreen = () => {
 
   const handleNext = () => {
     if (startLocation && finishLocation && availableSeats) {
-      console.log("Complete Ride Details:", {
-        vehicleDetails: {
-          carName: params.carName,
-          carModel: params.carModel,
-          numberPlate: params.numberPlate,
-          carColor: params.carColor,
-        },
-        rideDetails: {
+      // Navigate to the date & time selection screen instead of posting
+      router.push({
+        pathname: "/ridedatetime", // Matching your file naming 'app/ride-date-time.tsx'
+        params: {
+          ...params,
           startLocation,
-          startCoordinates,
           finishLocation,
-          finishCoordinates,
+          startLatitude: startCoordinates?.latitude?.toString(),
+          startLongitude: startCoordinates?.longitude?.toString(),
+          finishLatitude: finishCoordinates?.latitude?.toString(),
+          finishLongitude: finishCoordinates?.longitude?.toString(),
           availableSeats,
         },
       });
-
-      alert("Ride posted successfully!");
-      router.push("/selectrole");
     } else {
       alert("Please fill in all ride details");
     }
@@ -109,7 +101,6 @@ const PostRideDetailsScreen = () => {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -120,13 +111,9 @@ const PostRideDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Title */}
         <Text style={styles.title}>Post Ride</Text>
-
-        {/* Ride Details Section */}
         <Text style={styles.sectionTitle}>Ride Details</Text>
 
-        {/* Starting Location */}
         <View style={styles.locationInputContainer}>
           <TextInput
             style={[styles.locationInput, startLocation && styles.locationInputFilled]}
@@ -134,7 +121,6 @@ const PostRideDetailsScreen = () => {
             placeholderTextColor="#8DD3FF"
             value={startLocation}
             onChangeText={setStartLocation}
-            editable={true}
           />
           <TouchableOpacity
             style={styles.mapButton}
@@ -145,7 +131,6 @@ const PostRideDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Finish Location */}
         <View style={styles.locationInputContainer}>
           <TextInput
             style={[styles.locationInput, finishLocation && styles.locationInputFilled]}
@@ -153,7 +138,6 @@ const PostRideDetailsScreen = () => {
             placeholderTextColor="#8DD3FF"
             value={finishLocation}
             onChangeText={setFinishLocation}
-            editable={true}
           />
           <TouchableOpacity
             style={styles.mapButton}
@@ -164,7 +148,6 @@ const PostRideDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Available Seats Dropdown */}
         <TouchableOpacity
           style={styles.seatsInput}
           onPress={() => setShowSeatsModal(true)}
@@ -178,23 +161,17 @@ const PostRideDetailsScreen = () => {
             >
               {availableSeats ? `${availableSeats} Seat${availableSeats !== "1" ? "s" : ""}` : "Available Seats"}
             </Text>
-            <Ionicons
-              name="chevron-down"
-              size={24}
-              color="#4D9EFF"
-            />
+            <Ionicons name="chevron-down" size={24} color="#4D9EFF" />
           </View>
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Next Button - Fixed at Bottom */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
-          <Text style={styles.nextButtonText}>POST RIDE</Text>
+          <Text style={styles.nextButtonText}>NEXT</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Seats Selection Modal */}
       <Modal
         visible={showSeatsModal}
         transparent={true}
@@ -227,6 +204,8 @@ const PostRideDetailsScreen = () => {
 };
 
 export default PostRideDetailsScreen;
+
+// ... styles remain the same
 
 const styles = StyleSheet.create({
   container: {
