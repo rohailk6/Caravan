@@ -15,7 +15,7 @@ const SelectRoleScreen = () => {
     // Function to handle navigation when 'Rider' is clicked
     const handleRiderSelect = () => {
         // Navigates to a new screen for the rider role
-        router.push("/splitcost"); 
+        router.push("/riderMainScreen"); 
     };
 
     return (
