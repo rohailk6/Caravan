@@ -3,24 +3,23 @@ import * as Location from "expo-location";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import MapView, { Circle, Marker, Polyline } from "react-native-maps";
 
 const RiderHomeScreen = () => {
   const router = useRouter();
   const mapRef = React.useRef(null);
-
+  
   const [currentLocation, setCurrentLocation] = useState(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -31,7 +30,6 @@ const RiderHomeScreen = () => {
   const [destinationLocation, setDestinationLocation] = useState(null);
   const [routeCoordinates, setRouteCoordinates] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState("mini");
-  const [sidebarVisible, setSidebarVisible] = useState(false);
 
   useEffect(() => {
     getCurrentLocation();
@@ -40,7 +38,7 @@ const RiderHomeScreen = () => {
   const getCurrentLocation = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
-
+      
       if (status !== "granted") {
         // Default to Islamabad if permission denied
         const defaultLocation = {
@@ -57,14 +55,14 @@ const RiderHomeScreen = () => {
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
       });
-
+      
       const coords = {
         latitude: location.coords.latitude,
         longitude: location.coords.longitude,
         latitudeDelta: 0.05,
         longitudeDelta: 0.05,
       };
-
+      
       setCurrentLocation(coords);
       setLoading(false);
     } catch (error) {
@@ -116,7 +114,7 @@ const RiderHomeScreen = () => {
       );
 
       const data = await response.json();
-
+      
       const formattedSuggestions = data.map((item) => ({
         id: item.place_id,
         name: item.display_name,
@@ -134,7 +132,7 @@ const RiderHomeScreen = () => {
 
   const handleSearchChange = (text) => {
     setSearchQuery(text);
-
+    
     // Clear previous timeout
     if (searchTimeout) {
       clearTimeout(searchTimeout);
@@ -242,7 +240,7 @@ const RiderHomeScreen = () => {
                 <View style={styles.markerDot} />
               </View>
             </Marker>
-
+            
             {/* Circular radius around current location */}
             <Circle
               center={{
@@ -289,24 +287,21 @@ const RiderHomeScreen = () => {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() => setSidebarVisible(true)}
-        >
+        <TouchableOpacity style={styles.menuButton}>
           <View style={styles.menuIcon}>
             <View style={styles.menuLine} />
             <View style={styles.menuLine} />
             <View style={styles.menuLine} />
           </View>
         </TouchableOpacity>
-
+        
         <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={24} color="#333" />
         </TouchableOpacity>
       </View>
 
       {/* Center Location Button */}
-      <TouchableOpacity
+      <TouchableOpacity 
         style={styles.centerLocationButton}
         onPress={handleCenterLocation}
       >
@@ -320,8 +315,8 @@ const RiderHomeScreen = () => {
       >
         <View style={styles.bottomSection}>
           {/* Vehicle Selection */}
-          <ScrollView
-            horizontal
+          <ScrollView 
+            horizontal 
             showsHorizontalScrollIndicator={false}
             style={styles.vehicleContainer}
             contentContainerStyle={styles.vehicleScrollContent}
@@ -369,188 +364,72 @@ const RiderHomeScreen = () => {
             ))}
           </ScrollView>
 
-          {/* Search Bar */}
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Where would you go?"
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={handleSearchChange}
-              onFocus={() => {
-                if (suggestions.length > 0) {
-                  setShowSuggestions(true);
-                }
-              }}
-            />
-            <TouchableOpacity>
-              <Ionicons name="heart-outline" size={24} color="#999" />
-            </TouchableOpacity>
-          </View>
-
-          {/* Suggestions Dropdown */}
-          {showSuggestions && suggestions.length > 0 && (
-            <View style={styles.suggestionsContainer}>
-              <ScrollView
-                style={styles.suggestionsList}
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
-              >
-                {suggestions.map((suggestion) => (
-                  <TouchableOpacity
-                    key={suggestion.id}
-                    style={styles.suggestionItem}
-                    onPress={() => handleSelectSuggestion(suggestion)}
-                  >
-                    <Ionicons name="location-outline" size={20} color="#4D9EFF" />
-                    <Text style={styles.suggestionText} numberOfLines={2}>
-                      {suggestion.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Transport/Delivery Tabs */}
-          <View style={styles.tabsContainer}>
-            <TouchableOpacity
-              style={[styles.tab, selectedTab === "transport" && styles.tabActive]}
-              onPress={() => setSelectedTab("transport")}
-            >
-              <Text style={[styles.tabText, selectedTab === "transport" && styles.tabTextActive]}>
-                Transport
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tab, selectedTab === "delivery" && styles.tabActive]}
-              onPress={() => setSelectedTab("delivery")}
-            >
-              <Text style={[styles.tabText, selectedTab === "delivery" && styles.tabTextActive]}>
-                Delivery
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-
-      {/* Sidebar Menu */}
-      <Modal
-        visible={sidebarVisible}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setSidebarVisible(false)}
-      >
-        <View style={styles.sidebarOverlay}>
-          <TouchableOpacity
-            style={styles.sidebarBackdrop}
-            activeOpacity={1}
-            onPress={() => setSidebarVisible(false)}
+        {/* Search Bar */}
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color="#999" style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Where would you go?"
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={handleSearchChange}
+            onFocus={() => {
+              if (suggestions.length > 0) {
+                setShowSuggestions(true);
+              }
+            }}
           />
-
-          <View style={styles.sidebarContainer}>
-            {/* User Profile Section */}
-            <View style={styles.profileSection}>
-              <View style={styles.profileAvatar}>
-                <Text style={styles.profileInitial}>R</Text>
-              </View>
-              <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>Rohail</Text>
-                <View style={styles.ratingContainer}>
-                  <Ionicons name="star" size={16} color="#FFB800" />
-                  <Ionicons name="star" size={16} color="#FFB800" />
-                  <Ionicons name="star" size={16} color="#FFB800" />
-                  <Ionicons name="star" size={16} color="#FFB800" />
-                  <Ionicons name="star" size={16} color="#FFB800" />
-                  <Text style={styles.ratingText}>4.9 (138)</Text>
-                </View>
-              </View>
-              <TouchableOpacity>
-                <Ionicons name="chevron-forward" size={24} color="#666" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Menu Items */}
-            <ScrollView style={styles.menuItems} showsVerticalScrollIndicator={false}>
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="car-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>City</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="time-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Request history</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="cube-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Couriers</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="globe-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>City to City</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="bus-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Freight</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="notifications-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Notifications</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="shield-checkmark-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Safety</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="settings-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Settings</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="help-circle-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Help</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.menuItem}>
-                <Ionicons name="chatbubble-outline" size={24} color="#666" />
-                <Text style={styles.menuItemText}>Support</Text>
-              </TouchableOpacity>
-            </ScrollView>
-
-            {/* Driver Mode Button */}
-            <View style={styles.driverModeContainer}>
-              <TouchableOpacity
-                style={styles.driverModeButton}
-                onPress={() => {
-                  setSidebarVisible(false); // Close sidebar first
-                  router.push('/selectrole'); // Navigate to select role
-                }}
-              >
-
-                <Text style={styles.driverModeText}>Driver mode</Text>
-              </TouchableOpacity>
-
-              {/* Social Icons */}
-              <View style={styles.socialIcons}>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <Ionicons name="logo-facebook" size={32} color="#1877F2" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.socialIcon}>
-                  <Ionicons name="logo-instagram" size={32} color="#E4405F" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+          <TouchableOpacity>
+            <Ionicons name="heart-outline" size={24} color="#999" />
+          </TouchableOpacity>
         </View>
-      </Modal>
+
+        {/* Suggestions Dropdown */}
+        {showSuggestions && suggestions.length > 0 && (
+          <View style={styles.suggestionsContainer}>
+            <ScrollView 
+              style={styles.suggestionsList}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled={true}
+            >
+              {suggestions.map((suggestion) => (
+                <TouchableOpacity
+                  key={suggestion.id}
+                  style={styles.suggestionItem}
+                  onPress={() => handleSelectSuggestion(suggestion)}
+                >
+                  <Ionicons name="location-outline" size={20} color="#4D9EFF" />
+                  <Text style={styles.suggestionText} numberOfLines={2}>
+                    {suggestion.name}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Transport/Delivery Tabs */}
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === "transport" && styles.tabActive]}
+            onPress={() => setSelectedTab("transport")}
+          >
+            <Text style={[styles.tabText, selectedTab === "transport" && styles.tabTextActive]}>
+              Transport
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={[styles.tab, selectedTab === "delivery" && styles.tabActive]}
+            onPress={() => setSelectedTab("delivery")}
+          >
+            <Text style={[styles.tabText, selectedTab === "delivery" && styles.tabTextActive]}>
+              Delivery
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      </KeyboardAvoidingView>
 
       {/* Bottom Navigation */}
       <View style={styles.bottomNav}>
@@ -868,106 +747,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#4D9EFF",
     fontWeight: "600",
-  },
-  // Sidebar Styles
-  sidebarOverlay: {
-    flex: 1,
-    flexDirection: "row",
-  },
-  sidebarBackdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  sidebarContainer: {
-    width: "75%",
-    backgroundColor: "#fff",
-    paddingTop: 60,
-    paddingBottom: 20,
-  },
-  profileSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#F0F0F0",
-  },
-  profileAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#FFD4E5",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 15,
-  },
-  profileInitial: {
-    fontSize: 28,
-    fontWeight: "600",
-    color: "#FF6B9D",
-  },
-  profileInfo: {
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 5,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-  },
-  ratingText: {
-    fontSize: 14,
-    color: "#666",
-    marginLeft: 8,
-  },
-  menuItems: {
-    flex: 1,
-    paddingTop: 10,
-  },
-  menuItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 20,
-  },
-  menuItemText: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "400",
-  },
-  driverModeContainer: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  driverModeButton: {
-    backgroundColor: "#4D9EFF",
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  driverModeText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "white",
-  },
-  socialIcons: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 30,
-  },
-  socialIcon: {
-    width: 50,
-    height: 50,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

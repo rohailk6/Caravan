@@ -9,7 +9,7 @@ const SelectRoleScreen = () => {
     // Function to handle navigation when 'Driver' is clicked
     const handleDriverSelect = () => {
         // Navigates to the screen you provided in the image
-        router.push("/driverdasboard"); 
+        router.push("/choose-vehicle"); 
     };
 
     // Function to handle navigation when 'Rider' is clicked
@@ -167,6 +167,7 @@ const styles = StyleSheet.create({
     logo: {
         width: 140,
         height: 50,
+        
         
     },
 
