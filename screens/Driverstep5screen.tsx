@@ -115,7 +115,7 @@ export default function DriverStep5Screen() {
   };
 
   const handleFinish = () => {
-    // Validation
+    // 1. Validation
     if (!cnicFront || !cnicBack) {
       Alert.alert('Required', 'Please upload both front and back of your CNIC.');
       return;
@@ -126,32 +126,21 @@ export default function DriverStep5Screen() {
       return;
     }
 
-    // Show success modal
+    // 2. Show success modal and trigger animation
     setShowSuccessModal(true);
     animateCheckmark();
 
-    // Here you would typically submit all the data to your backend
-    console.log('All onboarding data:', {
-      ...params,
-      cnicFront,
-      cnicBack,
-      preferences: {
-        smokingAllowed,
-        musicAllowed,
-        femaleOnly,
-      },
-      agreedToTerms,
-    });
+    // 3. Log data for debugging (Optional)
+    console.log('Finalizing Registration:', { ...params, cnicFront, cnicBack });
 
-    // Navigate to main app after delay
+    // 4. Navigation Logic
+    // We use a timeout to let the user see the "Success" checkmark for a moment
     setTimeout(() => {
-      // router.replace('/dashboard'); // Replace with your main app route
-      // For now, just close the modal after 3 seconds
-      setTimeout(() => {
-        setShowSuccessModal(false);
-        Alert.alert('Success', 'Your application will be reviewed within 24-48 hours. We\'ll notify you via email.');
-      }, 2000);
-    }, 2000);
+      setShowSuccessModal(false); // Close modal
+      
+      // Use router.replace so the user can't "Go Back" to the onboarding steps
+      router.replace('/driver-main'); 
+    }, 2500); // 2.5 seconds delay for a smooth experience
   };
 
   return (

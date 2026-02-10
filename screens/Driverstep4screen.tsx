@@ -1,7 +1,7 @@
 // screens/DriverStep4Screen.tsx
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
     Alert,
@@ -110,6 +110,7 @@ export default function DriverStep4Screen() {
 
   return (
     <SafeAreaView style={styles.container}>
+        <Stack.Screen options={{headerShown: false}} />
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7FF" />
       
       <KeyboardAvoidingView 
