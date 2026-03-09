@@ -119,6 +119,11 @@ export const getMyBookings = async () => {
     return response.data;
 };
 
+export const cancelBooking = async (bookingId: string) => {
+    const response = await api.put(`/bookings/${bookingId}/cancel`);
+    return response.data;
+};
+
 export const getBookingRequests = async () => {
     const response = await api.get('/bookings/requests');
     return response.data;
