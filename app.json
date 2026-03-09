@@ -44,7 +44,9 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Carvaan to access your location."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

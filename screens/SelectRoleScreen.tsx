@@ -1,28 +1,57 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
-import React from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from "react-native";
+import { setRole } from "../api"; // ← import api function
 
 const SelectRoleScreen = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState(false); // ← prevents double tap
 
-    // Function to handle navigation when 'Driver' is clicked
-    const handleDriverSelect = () => {
-        // Navigates to the screen you provided in the image
-        router.push("/choose-vehicle"); 
+    // ── DRIVER ──────────────────────────────────────
+    const handleDriverSelect = async () => {
+        setLoading(true);
+        try {
+            await setRole('driver');           // ← saves role to database
+            router.push("/choose-vehicle");    // ← then navigate
+        } catch (error: any) {
+            Alert.alert(
+                "Error",
+                error.response?.data?.detail || "Could not set role. Please try again."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // Function to handle navigation when 'Rider' is clicked
-    const handleRiderSelect = () => {
-        // Navigates to a new screen for the rider role
-        router.push("/riderMainScreen"); 
+    // ── RIDER ───────────────────────────────────────
+    const handleRiderSelect = async () => {
+        setLoading(true);
+        try {
+            await setRole('rider');            // ← saves role to database
+            router.push("/riderMainScreen");   // ← then navigate
+        } catch (error: any) {
+            Alert.alert(
+                "Error",
+                error.response?.data?.detail || "Could not set role. Please try again."
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <View style={styles.container}>
 
             <Stack.Screen options={{ headerShown: false }} />
-
 
             {/* Back Button */}
             <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
@@ -37,25 +66,32 @@ const SelectRoleScreen = () => {
                     style={styles.logo}
                     resizeMode="contain"
                 />
-
                 <TouchableOpacity style={styles.menuButton}>
                     <Ionicons name="menu" size={24} color="#4D9EFF" />
                 </TouchableOpacity>
             </View>
 
-
             <Text style={styles.title}>Select your role.</Text>
 
-            {/* DRIVER CARD - Updated with onPress */}
-            <TouchableOpacity 
-                style={styles.card}
-                onPress={handleDriverSelect} // <-- New handler
+            {/* Loading indicator while API call is running */}
+            {loading && (
+                <ActivityIndicator
+                    size="large"
+                    color="#4D9EFF"
+                    style={{ marginTop: 20 }}
+                />
+            )}
+
+            {/* DRIVER CARD */}
+            <TouchableOpacity
+                style={[styles.card, loading && { opacity: 0.5 }]}
+                onPress={handleDriverSelect}
+                disabled={loading}  // ← cant tap while loading
             >
                 <Image
-                    source={require("../driver.png")} // add icon in assets
+                    source={require("../driver.png")}
                     style={styles.icon}
                 />
-
                 <View style={styles.textBox}>
                     <Text style={styles.roleTitle}>Driver</Text>
                     <Text style={styles.roleDesc}>
@@ -64,16 +100,16 @@ const SelectRoleScreen = () => {
                 </View>
             </TouchableOpacity>
 
-            {/* RIDER CARD - Updated with onPress */}
-            <TouchableOpacity 
-                style={styles.card}
-                onPress={handleRiderSelect} // <-- New handler
+            {/* RIDER CARD */}
+            <TouchableOpacity
+                style={[styles.card, loading && { opacity: 0.5 }]}
+                onPress={handleRiderSelect}
+                disabled={loading}  // ← cant tap while loading
             >
                 <Image
-                    source={require("../rider.png")} // add icon in assets
+                    source={require("../rider.png")}
                     style={styles.icon}
                 />
-
                 <View style={styles.textBox}>
                     <Text style={styles.roleTitle}>Rider</Text>
                     <Text style={styles.roleDesc}>
@@ -81,13 +117,13 @@ const SelectRoleScreen = () => {
                     </Text>
                 </View>
             </TouchableOpacity>
+
         </View>
     );
 };
 
 export default SelectRoleScreen;
 
-// Styles remain the same
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -95,7 +131,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingTop: 60,
     },
-
     backButton: {
         flexDirection: "row",
         alignItems: "center",
@@ -106,27 +141,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#000",
     },
-
     logoContainer: {
         marginTop: 10,
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
     },
-    logoText: {
-        fontSize: 32,
-        fontWeight: "700",
-        color: "#000",
-    },
-    dot: {
-        color: "#4D9EFF",
-    },
     menuButton: {
         backgroundColor: "#E4F0FF",
         padding: 8,
         borderRadius: 8,
     },
-
     title: {
         marginTop: 20,
         fontSize: 22,
@@ -134,7 +159,6 @@ const styles = StyleSheet.create({
         textAlign: "center",
         color: "#333",
     },
-
     card: {
         marginTop: 25,
         backgroundColor: "#DCEBFF",
@@ -143,14 +167,12 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
     },
-
     icon: {
         width: 60,
         height: 60,
         marginRight: 18,
         tintColor: "#4D9EFF",
     },
-
     textBox: {
         flex: 1,
     },
@@ -167,8 +189,5 @@ const styles = StyleSheet.create({
     logo: {
         width: 140,
         height: 50,
-        
-        
     },
-
 });

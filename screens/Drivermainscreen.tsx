@@ -3,15 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Animated,
-    Dimensions,
-    FlatList,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Animated,
+  Dimensions,
+  FlatList,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -82,7 +82,7 @@ export default function DriverMainScreen() {
   const [showSidebar, setShowSidebar] = useState(false);
   const [activeTab, setActiveTab] = useState('requests');
   const [showActiveRequest, setShowActiveRequest] = useState(false);
-  
+
   // Animation values
   const radarScale = useRef(new Animated.Value(1)).current;
   const radarOpacity = useRef(new Animated.Value(0.6)).current;
@@ -121,7 +121,7 @@ export default function DriverMainScreen() {
         ])
       );
       pulseAnimation.start();
-      
+
       // Simulate finding a passenger after 5 seconds
       const timer = setTimeout(() => {
         setShowActiveRequest(true);
@@ -257,7 +257,7 @@ export default function DriverMainScreen() {
             <View key={i} style={styles.gridLine} />
           ))}
         </View>
-        
+
         {/* Radar Animation */}
         <View style={styles.radarContainer}>
           <Animated.View
@@ -295,7 +295,7 @@ export default function DriverMainScreen() {
           ]}
         >
           <View style={styles.requestHandle} />
-          
+
           <View style={styles.requestHeader}>
             <View style={styles.requestPassenger}>
               <View style={[styles.requestAvatar, { backgroundColor: '#4D9EFF' }]}>
@@ -358,7 +358,7 @@ export default function DriverMainScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <Stack.Screen options={{headerShown: false}} />
+      <Stack.Screen options={{ headerShown: false }} />
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7FF" />
 
       {/* Custom Header */}
@@ -445,12 +445,22 @@ export default function DriverMainScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Sidebar */}
+      {/* Sidebar Overlay - FIXED: Only shows when sidebar is open */}
+      {showSidebar && (
+        <TouchableOpacity
+          style={styles.sidebarOverlay}
+          activeOpacity={1}
+          onPress={toggleSidebar}
+        />
+      )}
+
+      {/* Sidebar - FIXED: Moved after overlay so it's on top */}
       <Animated.View
         style={[
           styles.sidebar,
           { transform: [{ translateX: sidebarSlide }] },
         ]}
+        pointerEvents={showSidebar ? 'auto' : 'none'}
       >
         <View style={styles.sidebarHeader}>
           <View style={styles.profileSection}>
@@ -522,7 +532,14 @@ export default function DriverMainScreen() {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity style={styles.passengerModeButton}>
+        {/* FIXED: Passenger Mode button now navigates to /riderHome */}
+        <TouchableOpacity
+          style={styles.passengerModeButton}
+          onPress={() => {
+            router.push('/riderMainScreen');
+            toggleSidebar(); // Close sidebar after navigation
+          }}
+        >
           <Text style={styles.passengerModeText}>Passenger mode</Text>
         </TouchableOpacity>
 
@@ -535,15 +552,6 @@ export default function DriverMainScreen() {
           </TouchableOpacity>
         </View>
       </Animated.View>
-
-      {/* Sidebar Overlay */}
-      {showSidebar && (
-        <TouchableOpacity
-          style={styles.sidebarOverlay}
-          activeOpacity={1}
-          onPress={toggleSidebar}
-        />
-      )}
     </SafeAreaView>
   );
 }
@@ -1111,6 +1119,6 @@ const styles = StyleSheet.create({
   },
   sidebarOverlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
 });

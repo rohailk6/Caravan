@@ -3,18 +3,18 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Platform,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const RideDateTimeScreen = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
+  const params = useLocalSearchParams(); // ← receives all params from PostRideDetails
 
-  // State for the selected date and time
   const [date, setDate] = useState(new Date());
 
   const onChange = (event: any, selectedDate?: Date) => {
@@ -23,21 +23,39 @@ const RideDateTimeScreen = () => {
   };
 
   const handleNext = () => {
+    // Validate — date must be in the future
+    const now = new Date();
+    if (date <= now) {
+      Alert.alert(
+        "Invalid Date",
+        "Please select a future date and time for your ride."
+      );
+      return;
+    }
+
+    // Format date and time to send to backend later
+    const rideDate = date.toISOString().split("T")[0]; // "2026-03-05"
+    const rideTime = date.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }); // "08:30 AM"
+
+    // Pass ALL params forward to SplitCost screen
     router.push({
-      pathname: "/selectrole", 
+      pathname: "/splitcost",   // ← FIXED: was wrongly going to /selectrole
       params: {
-        ...params,
-        selectedDate: date.toISOString(),
+        ...params,              // ← locations, seats from PostRideDetails
+        rideDate,               // ← "2026-03-05"
+        rideTime,               // ← "08:30 AM"
+        selectedDate: date.toISOString(), // ← full date for display
       },
     });
   };
 
-  // Formatter for the blue display text below the spinner
   const formatDisplayDate = () => {
-    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const dayName = date.toLocaleDateString([], { weekday: 'long' });
-    const monthDay = date.toLocaleDateString([], { month: 'long', day: 'numeric' });
-    
+    const time = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    const dayName = date.toLocaleDateString([], { weekday: "long" });
+    const monthDay = date.toLocaleDateString([], { month: "long", day: "numeric" });
     return { time, monthDay, dayName };
   };
 
@@ -62,19 +80,20 @@ const RideDateTimeScreen = () => {
         {/* Date Picker Card */}
         <View style={styles.pickerCard}>
           <Text style={styles.pickerTitle}>Select Date & Time</Text>
-          
+
           <View style={styles.pickerWrapper}>
             <DateTimePicker
               value={date}
               mode="datetime"
-              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              display={Platform.OS === "ios" ? "spinner" : "default"}
               onChange={onChange}
+              minimumDate={new Date()} // ← prevents selecting past dates
               textColor="#000"
               style={styles.datePicker}
             />
           </View>
 
-          {/* Formatted Output Text */}
+          {/* Formatted Display */}
           <View style={styles.displayContainer}>
             <Text style={styles.displayText}>{time}</Text>
             <Text style={styles.displayText}>{monthDay}</Text>
@@ -96,89 +115,30 @@ const RideDateTimeScreen = () => {
 export default RideDateTimeScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  header: {
-    paddingTop: 50,
-    paddingHorizontal: 20,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backText: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: "#000",
-  },
-  content: {
-    paddingHorizontal: 25,
-    marginTop: 20,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  header: { paddingTop: 50, paddingHorizontal: 20 },
+  backButton: { flexDirection: "row", alignItems: "center" },
+  backText: { marginLeft: 4, fontSize: 16, color: "#000" },
+  content: { paddingHorizontal: 25, marginTop: 20 },
   title: {
-    fontSize: 32,
-    fontWeight: "600",
-    color: "#333",
-    textAlign: "center",
-    marginBottom: 40,
+    fontSize: 32, fontWeight: "600", color: "#333",
+    textAlign: "center", marginBottom: 40,
   },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "500",
-    color: "#4D9EFF",
-    marginBottom: 20,
-  },
+  sectionTitle: { fontSize: 22, fontWeight: "500", color: "#4D9EFF", marginBottom: 20 },
   pickerCard: {
-    borderWidth: 1.5,
-    borderColor: "#4D9EFF",
-    borderRadius: 15,
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#fff",
+    borderWidth: 1.5, borderColor: "#4D9EFF",
+    borderRadius: 15, padding: 20,
+    alignItems: "center", backgroundColor: "#fff",
   },
-  pickerTitle: {
-    fontSize: 20,
-    color: "#4D9EFF",
-    fontWeight: "500",
-    marginBottom: 10,
-  },
-  pickerWrapper: {
-    width: '100%',
-    height: 180,
-    justifyContent: 'center',
-  },
-  datePicker: {
-    width: '100%',
-    height: '100%',
-  },
-  displayContainer: {
-    marginTop: 20,
-    alignItems: "center",
-  },
-  displayText: {
-    fontSize: 22,
-    color: "#4D9EFF",
-    fontWeight: "500",
-    lineHeight: 30,
-  },
-  buttonContainer: {
-    position: "absolute",
-    bottom: 50,
-    left: 20,
-    right: 20,
-  },
+  pickerTitle: { fontSize: 20, color: "#4D9EFF", fontWeight: "500", marginBottom: 10 },
+  pickerWrapper: { width: "100%", height: 180, justifyContent: "center" },
+  datePicker: { width: "100%", height: "100%" },
+  displayContainer: { marginTop: 20, alignItems: "center" },
+  displayText: { fontSize: 22, color: "#4D9EFF", fontWeight: "500", lineHeight: 30 },
+  buttonContainer: { position: "absolute", bottom: 50, left: 20, right: 20 },
   nextButton: {
-    backgroundColor: "#4D9EFF",
-    paddingVertical: 18,
-    borderRadius: 12,
-    alignItems: "center",
+    backgroundColor: "#4D9EFF", paddingVertical: 18,
+    borderRadius: 12, alignItems: "center",
   },
-  nextButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "700",
-    letterSpacing: 1,
-  },
+  nextButtonText: { color: "#fff", fontSize: 18, fontWeight: "700", letterSpacing: 1 },
 });

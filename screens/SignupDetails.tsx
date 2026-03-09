@@ -2,6 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
+  ActivityIndicator,
+  Alert,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -10,6 +12,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { signup } from '../api'; // ← importing our api function
 
 const SignupDetails = () => {
   const router = useRouter();
@@ -19,17 +22,43 @@ const SignupDetails = () => {
   const [email, setEmail] = useState("");
   const [emergency, setEmergency] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");        // ← NEW
+  const [showPassword, setShowPassword] = useState(false); // ← NEW
   const [genderOpen, setGenderOpen] = useState(false);
   const [selectedGender, setSelectedGender] = useState("");
+  const [loading, setLoading] = useState(false);       // ← NEW
 
   // ---------------- VALIDATION ----------------
   const allFieldsFilled = () => {
     return (
       name.trim() !== "" &&
+      email.trim() !== "" &&
       emergency.trim() !== "" &&
       phone.trim() !== "" &&
+      password.trim() !== "" &&
       selectedGender.trim() !== ""
     );
+  };
+
+  // ---------------- SIGNUP HANDLER ----------------
+  const handleSignup = async () => {
+    setLoading(true);
+    try {
+      await signup({ name, email, phone: `+92${phone}`, emergency_contact: emergency, gender: selectedGender, password });
+      router.push("/verify");
+    } catch (error: any) {
+      // ← ADD THIS to see the real error
+      console.log("Full error:", JSON.stringify(error.response?.data));
+      console.log("Error status:", error.response?.status);
+      console.log("Error message:", error.message);
+
+      Alert.alert(
+        "Signup Failed",
+        error.response?.data?.detail || error.message || "Something went wrong."
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -58,6 +87,7 @@ const SignupDetails = () => {
           />
         </View>
 
+        {/* Email Input */}
         <View style={styles.inputWrapper}>
           <TextInput
             placeholder="Email"
@@ -65,6 +95,8 @@ const SignupDetails = () => {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
           />
         </View>
 
@@ -82,15 +114,10 @@ const SignupDetails = () => {
 
         {/* Phone Number Row */}
         <View style={styles.phoneRow}>
-          {/* Flag Placeholder */}
           <TouchableOpacity style={styles.flagBox}></TouchableOpacity>
-
-          {/* Country Code */}
           <View style={styles.codeBox}>
             <Text style={styles.codeText}>+92</Text>
           </View>
-
-          {/* Phone Input */}
           <TextInput
             placeholder="Your mobile number"
             placeholderTextColor="#8BB5FF"
@@ -99,6 +126,26 @@ const SignupDetails = () => {
             value={phone}
             onChangeText={setPhone}
           />
+        </View>
+
+        {/* Password Input ← NEW */}
+        <View style={styles.passwordRow}>
+          <TextInput
+            placeholder="Password"
+            placeholderTextColor="#8BB5FF"
+            style={styles.passwordInput}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Ionicons
+              name={showPassword ? "eye-off" : "eye"}
+              size={22}
+              color="#8BB5FF"
+            />
+          </TouchableOpacity>
         </View>
 
         {/* Gender Dropdown */}
@@ -147,12 +194,16 @@ const SignupDetails = () => {
         <TouchableOpacity
           style={[
             styles.signupButton,
-            { opacity: allFieldsFilled() ? 1 : 0.5 }
+            { opacity: allFieldsFilled() && !loading ? 1 : 0.5 }
           ]}
-          disabled={!allFieldsFilled()}
-          onPress={() => router.push("/verify")}
+          disabled={!allFieldsFilled() || loading}
+          onPress={handleSignup}  // ← now calls the backend
         >
-          <Text style={styles.signupText}>Sign Up</Text>
+          {loading ? (
+            <ActivityIndicator color="#FFFFFF" />  // shows spinner while waiting
+          ) : (
+            <Text style={styles.signupText}>Sign Up</Text>
+          )}
         </TouchableOpacity>
 
       </ScrollView>
@@ -228,6 +279,22 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   phoneInput: {
+    flex: 1,
+    fontSize: 16,
+    color: "#333",
+  },
+  // ← NEW password style
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderColor: "#8BB5FF",
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    marginBottom: 20,
+  },
+  passwordInput: {
     flex: 1,
     fontSize: 16,
     color: "#333",

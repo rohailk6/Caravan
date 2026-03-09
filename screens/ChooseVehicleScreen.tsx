@@ -1,14 +1,15 @@
 // screens/ChooseVehicleScreen.tsx
 import { Ionicons } from '@expo/vector-icons';
-import { Stack, useRouter } from 'expo-router'; // 1. Added Stack
-import React from 'react';
+import { Stack, useRouter } from 'expo-router';
+import React, { useState } from 'react';
 import {
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 interface VehicleOption {
@@ -20,19 +21,19 @@ interface VehicleOption {
 
 const VEHICLE_OPTIONS: VehicleOption[] = [
   {
-    id: 'car',
+    id: 'Car',
     title: 'Car',
     subtitle: 'Standard 4-seater',
     icon: 'car-sport',
   },
   {
-    id: 'bike',
+    id: 'Motorcycle',
     title: 'Motorcycle',
     subtitle: 'Quick & efficient',
     icon: 'bicycle',
   },
   {
-    id: 'rickshaw',
+    id: 'Rickshaw',
     title: 'Rickshaw',
     subtitle: 'Local transport',
     icon: 'bus',
@@ -41,21 +42,30 @@ const VEHICLE_OPTIONS: VehicleOption[] = [
 
 export default function ChooseVehicleScreen() {
   const router = useRouter();
+  const [selectedId, setSelectedId] = useState<string | null>(null); // ← tracks selection
+  const [loading, setLoading] = useState(false);
 
   const handleVehicleSelect = (vehicleId: string) => {
-    // Navigate to personal info screen (driver-step-1)
-    router.push('/driver-step-1'); 
+    setSelectedId(vehicleId); // ← highlight selected card
+    setLoading(true);
+
+    // Pass the selected vehicle type to driver-step-1
+    // driver-step-1 will collect remaining details and save to backend
+    router.push({
+      pathname: '/driver-step-1',
+      params: { vehicle_type: vehicleId }  // ← send vehicle type forward
+    });
+
+    setLoading(false);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 2. Hide the default navigation header */}
       <Stack.Screen options={{ headerShown: false }} />
-      
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7FF" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => router.back()}
         >
@@ -70,24 +80,35 @@ export default function ChooseVehicleScreen() {
           {VEHICLE_OPTIONS.map((vehicle) => (
             <TouchableOpacity
               key={vehicle.id}
-              style={styles.vehicleCard}
+              style={[
+                styles.vehicleCard,
+                selectedId === vehicle.id && styles.vehicleCardSelected // ← highlight
+              ]}
               onPress={() => handleVehicleSelect(vehicle.id)}
               activeOpacity={0.7}
+              disabled={loading}
             >
-              <View style={styles.iconContainer}>
-                <Ionicons 
-                  name={vehicle.icon} 
-                  size={48} 
-                  color="#4D9EFF" 
+              <View style={[
+                styles.iconContainer,
+                selectedId === vehicle.id && styles.iconContainerSelected
+              ]}>
+                <Ionicons
+                  name={vehicle.icon}
+                  size={48}
+                  color={selectedId === vehicle.id ? "#FFFFFF" : "#4D9EFF"}
                 />
               </View>
-              
+
               <View style={styles.vehicleInfo}>
                 <Text style={styles.vehicleTitle}>{vehicle.title}</Text>
                 <Text style={styles.vehicleSubtitle}>{vehicle.subtitle}</Text>
               </View>
-              
-              <Ionicons name="chevron-forward" size={24} color="#2A66B5" />
+
+              {loading && selectedId === vehicle.id ? (
+                <ActivityIndicator color="#2A66B5" />
+              ) : (
+                <Ionicons name="chevron-forward" size={24} color="#2A66B5" />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -132,13 +153,16 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
     elevation: 3,
+  },
+  // ← NEW: selected card turns blue
+  vehicleCardSelected: {
+    backgroundColor: '#E8F4FF',
+    borderWidth: 2,
+    borderColor: '#4D9EFF',
   },
   iconContainer: {
     width: 80,
@@ -148,6 +172,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
+  },
+  // ← NEW: selected icon background turns blue
+  iconContainerSelected: {
+    backgroundColor: '#4D9EFF',
   },
   vehicleInfo: {
     flex: 1,

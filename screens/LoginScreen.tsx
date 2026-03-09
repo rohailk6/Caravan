@@ -50,7 +50,7 @@ const LoginScreen = () => {
           <TouchableOpacity
             style={styles.loginButton}
             activeOpacity={0.8}
-            onPress={() => router.push('/signup')}
+            onPress={() => router.push('/login2')}
           >
             <Text style={styles.loginButtonText}>Log In</Text>
           </TouchableOpacity>

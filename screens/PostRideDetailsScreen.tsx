@@ -2,15 +2,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    KeyboardAvoidingView,
-    Modal,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const PostRideDetailsScreen = () => {
@@ -19,8 +20,8 @@ const PostRideDetailsScreen = () => {
 
   const [startLocation, setStartLocation] = useState("");
   const [finishLocation, setFinishLocation] = useState("");
-  const [startCoordinates, setStartCoordinates] = useState(null);
-  const [finishCoordinates, setFinishCoordinates] = useState(null);
+  const [startCoordinates, setStartCoordinates] = useState<{ latitude: number, longitude: number } | null>(null);
+  const [finishCoordinates, setFinishCoordinates] = useState<{ latitude: number, longitude: number } | null>(null);
   const [availableSeats, setAvailableSeats] = useState("");
   const [showSeatsModal, setShowSeatsModal] = useState(false);
 
@@ -48,12 +49,12 @@ const PostRideDetailsScreen = () => {
     }
   }, [params.startLocation, params.finishLocation, params.startLatitude, params.finishLatitude]);
 
-  const handleSelectSeats = (seats) => {
+  const handleSelectSeats = (seats: string) => {
     setAvailableSeats(seats);
     setShowSeatsModal(false);
   };
 
-  const handleOpenMap = (locationType) => {
+  const handleOpenMap = (locationType: string) => {
     router.push({
       pathname: "/locationPicker",
       params: {
@@ -70,24 +71,34 @@ const PostRideDetailsScreen = () => {
   };
 
   const handleNext = () => {
-    if (startLocation && finishLocation && availableSeats) {
-      // Navigate to the date & time selection screen instead of posting
-      router.push({
-        pathname: "/ridedatetime", // Matching your file naming 'app/ride-date-time.tsx'
-        params: {
-          ...params,
-          startLocation,
-          finishLocation,
-          startLatitude: startCoordinates?.latitude?.toString(),
-          startLongitude: startCoordinates?.longitude?.toString(),
-          finishLatitude: finishCoordinates?.latitude?.toString(),
-          finishLongitude: finishCoordinates?.longitude?.toString(),
-          availableSeats,
-        },
-      });
-    } else {
-      alert("Please fill in all ride details");
+    // Validate all 3 fields are filled
+    if (!startLocation.trim()) {
+      Alert.alert("Missing Info", "Please enter a starting location");
+      return;
     }
+    if (!finishLocation.trim()) {
+      Alert.alert("Missing Info", "Please enter a finish location");
+      return;
+    }
+    if (!availableSeats) {
+      Alert.alert("Missing Info", "Please select available seats");
+      return;
+    }
+
+    // Pass all data forward to RideDateTime screen
+    router.push({
+      pathname: "/ridedatetime",
+      params: {
+        ...params,
+        startLocation,
+        finishLocation,
+        startLatitude: startCoordinates?.latitude?.toString(),
+        startLongitude: startCoordinates?.longitude?.toString(),
+        finishLatitude: finishCoordinates?.latitude?.toString(),
+        finishLongitude: finishCoordinates?.longitude?.toString(),
+        availableSeats,
+      },
+    });
   };
 
   return (
@@ -114,6 +125,7 @@ const PostRideDetailsScreen = () => {
         <Text style={styles.title}>Post Ride</Text>
         <Text style={styles.sectionTitle}>Ride Details</Text>
 
+        {/* Start Location */}
         <View style={styles.locationInputContainer}>
           <TextInput
             style={[styles.locationInput, startLocation && styles.locationInputFilled]}
@@ -131,6 +143,7 @@ const PostRideDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Finish Location */}
         <View style={styles.locationInputContainer}>
           <TextInput
             style={[styles.locationInput, finishLocation && styles.locationInputFilled]}
@@ -148,30 +161,30 @@ const PostRideDetailsScreen = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Seats Selector */}
         <TouchableOpacity
           style={styles.seatsInput}
           onPress={() => setShowSeatsModal(true)}
         >
           <View style={styles.seatsContent}>
-            <Text
-              style={[
-                styles.seatsText,
-                !availableSeats && styles.placeholderText,
-              ]}
-            >
-              {availableSeats ? `${availableSeats} Seat${availableSeats !== "1" ? "s" : ""}` : "Available Seats"}
+            <Text style={[styles.seatsText, !availableSeats && styles.placeholderText]}>
+              {availableSeats
+                ? `${availableSeats} Seat${availableSeats !== "1" ? "s" : ""}`
+                : "Available Seats"}
             </Text>
             <Ionicons name="chevron-down" size={24} color="#4D9EFF" />
           </View>
         </TouchableOpacity>
       </ScrollView>
 
+      {/* Next Button */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
           <Text style={styles.nextButtonText}>NEXT</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Seats Modal */}
       <Modal
         visible={showSeatsModal}
         transparent={true}
@@ -205,144 +218,47 @@ const PostRideDetailsScreen = () => {
 
 export default PostRideDetailsScreen;
 
-// ... styles remain the same
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContent: {
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    paddingBottom: 100,
-  },
-  header: {
-    marginBottom: 30,
-  },
-  backButton: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  backText: {
-    marginLeft: 4,
-    fontSize: 16,
-    color: "#000",
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "500",
-    color: "#333",
-    marginBottom: 40,
-    textAlign: "center",
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: "500",
-    color: "#4D9EFF",
-    marginBottom: 25,
-  },
-  locationInputContainer: {
-    marginBottom: 20,
-  },
+  container: { flex: 1, backgroundColor: "#fff" },
+  scrollContent: { paddingTop: 50, paddingHorizontal: 20, paddingBottom: 100 },
+  header: { marginBottom: 30 },
+  backButton: { flexDirection: "row", alignItems: "center" },
+  backText: { marginLeft: 4, fontSize: 16, color: "#000" },
+  title: { fontSize: 32, fontWeight: "500", color: "#333", marginBottom: 40, textAlign: "center" },
+  sectionTitle: { fontSize: 22, fontWeight: "500", color: "#4D9EFF", marginBottom: 25 },
+  locationInputContainer: { marginBottom: 20 },
   locationInput: {
-    borderWidth: 1.5,
-    borderColor: "#4D9EFF",
-    borderRadius: 10,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    color: "#4D9EFF",
-    marginBottom: 10,
+    borderWidth: 1.5, borderColor: "#4D9EFF", borderRadius: 10,
+    paddingVertical: 18, paddingHorizontal: 20,
+    fontSize: 16, color: "#4D9EFF", marginBottom: 10,
   },
-  locationInputFilled: {
-    backgroundColor: "#F0F8FF",
-  },
+  locationInputFilled: { backgroundColor: "#F0F8FF" },
   mapButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingVertical: 12,
-    backgroundColor: "#E8F4FF",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#4D9EFF",
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, paddingVertical: 12, backgroundColor: "#E8F4FF",
+    borderRadius: 8, borderWidth: 1, borderColor: "#4D9EFF",
   },
-  mapButtonText: {
-    fontSize: 14,
-    color: "#4D9EFF",
-    fontWeight: "600",
-  },
+  mapButtonText: { fontSize: 14, color: "#4D9EFF", fontWeight: "600" },
   seatsInput: {
-    borderWidth: 1.5,
-    borderColor: "#4D9EFF",
-    borderRadius: 10,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    borderWidth: 1.5, borderColor: "#4D9EFF",
+    borderRadius: 10, paddingVertical: 18, paddingHorizontal: 20,
   },
-  seatsContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  seatsText: {
-    fontSize: 16,
-    color: "#4D9EFF",
-  },
-  placeholderText: {
-    color: "#8DD3FF",
-  },
+  seatsContent: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  seatsText: { fontSize: 16, color: "#4D9EFF" },
+  placeholderText: { color: "#8DD3FF" },
   buttonContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 20,
-    paddingBottom: 40,
-    backgroundColor: "#fff",
-    paddingTop: 10,
+    position: "absolute", bottom: 0, left: 0, right: 0,
+    paddingHorizontal: 20, paddingBottom: 40,
+    backgroundColor: "#fff", paddingTop: 10,
   },
-  nextButton: {
-    backgroundColor: "#4D9EFF",
-    paddingVertical: 18,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  nextButtonText: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-    letterSpacing: 0.5,
-  },
+  nextButton: { backgroundColor: "#4D9EFF", paddingVertical: 18, borderRadius: 10, alignItems: "center" },
+  nextButtonText: { color: "#fff", fontSize: 18, fontWeight: "600", letterSpacing: 0.5 },
   modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "center",
-    alignItems: "center",
+    flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center", alignItems: "center",
   },
-  modalContent: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    padding: 20,
-    width: "80%",
-    maxWidth: 300,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  modalOption: {
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#E0E0E0",
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: "#4D9EFF",
-    textAlign: "center",
-  },
+  modalContent: { backgroundColor: "#fff", borderRadius: 15, padding: 20, width: "80%", maxWidth: 300 },
+  modalTitle: { fontSize: 18, fontWeight: "600", color: "#333", marginBottom: 20, textAlign: "center" },
+  modalOption: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: "#E0E0E0" },
+  modalOptionText: { fontSize: 16, color: "#4D9EFF", textAlign: "center" },
 });

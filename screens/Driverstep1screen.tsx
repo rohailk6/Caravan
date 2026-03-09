@@ -1,26 +1,27 @@
 // screens/DriverStep1Screen.tsx
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'; // 1. Added Stack
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function DriverStep1Screen() {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  
+  const params = useLocalSearchParams(); // ← receives vehicle_type from ChooseVehicle
+
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,7 +30,7 @@ export default function DriverStep1Screen() {
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      alert('Permission to access camera roll is required!');
+      Alert.alert('Permission Required', 'Permission to access camera roll is required!');
       return;
     }
 
@@ -46,15 +47,23 @@ export default function DriverStep1Screen() {
   };
 
   const handleNext = () => {
+    // Validate all fields are filled
     if (!firstName.trim() || !lastName.trim() || !dateOfBirth.trim()) {
-      alert('Please fill in all fields');
+      Alert.alert('Missing Fields', 'Please fill in all fields');
       return;
     }
 
-    // Logic for Step 2
+    // Pass ALL params forward to step 2
+    // This includes vehicle_type from ChooseVehicle + new data from this screen
     router.push({
       pathname: '/driver-step-2',
-      params: { ...params, firstName, lastName, dateOfBirth, profileImage },
+      params: {
+        ...params,           // ← vehicle_type comes from here
+        firstName,
+        lastName,
+        dateOfBirth,
+        profileImage: profileImage || '',
+      },
     });
   };
 
@@ -68,32 +77,29 @@ export default function DriverStep1Screen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* 2. Hide the default navigation header */}
       <Stack.Screen options={{ headerShown: false }} />
-      
       <StatusBar barStyle="dark-content" backgroundColor="#F0F7FF" />
-      
-      <KeyboardAvoidingView 
+
+      <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}
       >
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Custom Header (The UI one) */}
+          {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => router.back()}
             >
               <Ionicons name="close" size={28} color="#2A66B5" />
             </TouchableOpacity>
-            
             <Text style={styles.helpText}>Help</Text>
           </View>
 
-          {/* Progress Indicator */}
+          {/* Progress Bar */}
           <View style={styles.progressContainer}>
             <View style={styles.progressBar}>
               <View style={[styles.progressFill, { width: '20%' }]} />
@@ -103,15 +109,15 @@ export default function DriverStep1Screen() {
 
           <Text style={styles.title}>Personal information</Text>
 
-          {/* Profile Picture Upload */}
+          {/* Profile Picture */}
           <View style={styles.profileSection}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.profileImageContainer}
               onPress={pickImage}
             >
               {profileImage ? (
-                <Image 
-                  source={{ uri: profileImage }} 
+                <Image
+                  source={{ uri: profileImage }}
                   style={styles.profileImage}
                 />
               ) : (
@@ -133,6 +139,7 @@ export default function DriverStep1Screen() {
                 onChangeText={setFirstName}
                 placeholder="Rohail"
                 placeholderTextColor="#A0AEC0"
+                autoCapitalize="words"
               />
             </View>
 
@@ -144,6 +151,7 @@ export default function DriverStep1Screen() {
                 onChangeText={setLastName}
                 placeholder="Nawaz"
                 placeholderTextColor="#A0AEC0"
+                autoCapitalize="words"
               />
             </View>
 
@@ -164,14 +172,14 @@ export default function DriverStep1Screen() {
 
         {/* Bottom Navigation */}
         <View style={styles.bottomNav}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.prevButton}
             onPress={() => router.back()}
           >
             <Ionicons name="chevron-back" size={24} color="#2A66B5" />
           </TouchableOpacity>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.nextButton}
             onPress={handleNext}
             activeOpacity={0.8}
@@ -199,16 +207,27 @@ const styles = StyleSheet.create({
   backButton: { width: 40, height: 40, justifyContent: 'center' },
   helpText: { fontSize: 16, color: '#4D9EFF', fontWeight: '600' },
   progressContainer: { marginBottom: 30 },
-  progressBar: { height: 4, backgroundColor: '#E2E8F0', borderRadius: 2, marginBottom: 8 },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 2,
+    marginBottom: 8,
+  },
   progressFill: { height: '100%', backgroundColor: '#4D9EFF', borderRadius: 2 },
   stepText: { fontSize: 14, color: '#718096' },
   title: { fontSize: 28, fontWeight: 'bold', color: '#2A66B5', marginBottom: 30 },
   profileSection: { alignItems: 'center', marginBottom: 40 },
   profileImageContainer: { marginBottom: 12 },
   profilePlaceholder: {
-    width: 100, height: 100, borderRadius: 50, backgroundColor: '#FFFFFF',
-    borderWidth: 2, borderColor: '#4D9EFF', borderStyle: 'dashed',
-    justifyContent: 'center', alignItems: 'center',
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 2,
+    borderColor: '#4D9EFF',
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   profileImage: { width: 100, height: 100, borderRadius: 50 },
   profileLabel: { fontSize: 14, color: '#718096' },
@@ -216,22 +235,47 @@ const styles = StyleSheet.create({
   inputGroup: { gap: 8 },
   inputLabel: { fontSize: 14, color: '#4A5568', fontWeight: '500' },
   input: {
-    backgroundColor: '#FFFFFF', borderRadius: 12, padding: 16, fontSize: 16,
-    color: '#2D3748', borderWidth: 1, borderColor: '#E2E8F0',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 16,
+    color: '#2D3748',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   bottomNav: {
-    position: 'absolute', bottom: 0, left: 0, right: 0,
-    flexDirection: 'row', justifyContent: 'space-between',
-    paddingHorizontal: 20, paddingVertical: 20, backgroundColor: '#F0F7FF',
-    borderTopWidth: 1, borderTopColor: '#E2E8F0',
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    backgroundColor: '#F0F7FF',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
   },
   prevButton: {
-    width: 56, height: 56, borderRadius: 12, backgroundColor: '#fff',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#E2E8F0'
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
   },
   nextButton: {
-    flex: 1, marginLeft: 16, height: 56, borderRadius: 12, backgroundColor: '#4D9EFF',
-    flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8,
+    flex: 1,
+    marginLeft: 16,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: '#4D9EFF',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
   },
   nextButtonText: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
 });
